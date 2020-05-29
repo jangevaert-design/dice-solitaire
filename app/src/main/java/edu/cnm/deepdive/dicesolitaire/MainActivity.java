@@ -1,12 +1,16 @@
 package edu.cnm.deepdive.dicesolitaire;
 
 import android.content.res.Resources;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import edu.cnm.deepdive.dicesolitaire.model.Roll;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
@@ -17,6 +21,9 @@ public class MainActivity extends AppCompatActivity {
   private int maxPairValue;
   private TextView[] labels;
   private ProgressBar[] counts;
+  private Button roller;
+  private TextView rollDisplay;
+  private Random rng;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     labels = new TextView[maxPairValue - minPairValue + 1];
     counts = new ProgressBar[maxPairValue - minPairValue + 1];
     Resources res = getResources();
-    Random rng = new Random();
+    rng = new Random();
     NumberFormat formatter = NumberFormat.getInstance();
     for (int i = minPairValue; i <= maxPairValue; i++) {
       String labelIdstring = String.format(LABEL_ID_FORMAT, i);
@@ -38,7 +45,17 @@ public class MainActivity extends AppCompatActivity {
       counts[i - minPairValue] = findViewById(countId);
       counts[i - minPairValue].setProgress(1 + rng.nextInt(10));
     }
+    roller = findViewById(R.id.roller);
+    rollDisplay = findViewById(R.id.roll_display);
+    roller.setOnClickListener(new RollerListener());
+  }
 
+  private class RollerListener implements OnClickListener {
 
+    @Override
+    public void onClick(View v) {
+      Roll roll = new Roll(rng);
+      rollDisplay.setText(Arrays.toString(roll.getDice()));
+    }
   }
 }
