@@ -82,19 +82,21 @@ public class MainActivity extends AppCompatActivity {
       String idString = String.format(DICE_FACE_ID_FORMAT, i + 1);
       int id = res.getIdentifier(idString, "drawable", getPackageName());
       diceFaces[i] = getDrawable(id);
-
     }
-
 
     roller.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
-        Roll roll = new Roll(rng);
-        // TODO Display dice images.
-
+        roller.setEnabled(false);
+        new DiceAnimator().start();
       }
     });
   }
+
+  private void displayDiceFace (int die, int face) {
+    diceImages[die].setImageDrawable(diceFaces[face]);
+  }
+
 
   private void setupPairControls(Resources res, NumberFormat formatter) {
     pairLabels = new TextView[maxPairValue - minPairValue + 1];
@@ -111,5 +113,43 @@ public class MainActivity extends AppCompatActivity {
     }
   }
 
+  private class DiceAnimator extends Thread {
+
+    @Override
+    public void run() {
+      Roll roll = new Roll(rng);
+      for (int i = 0; i < Roll.NUM_DICE; i++) {
+        final int dieIndex = i;
+        for (int j = 0; j < 5; j++) {
+          int animationFace = rng.nextInt(NUM_FACES);
+          displayFace(dieIndex, animationFace + 1);
+          try {
+            sleep(100);
+          } catch (InterruptedException expected) {
+            // Ignore exception and get on with life
+          }
+        }
+        final int value = roll.getDice()[i];
+        displayFace(dieIndex, value);
+      }
+      runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          roller.setEnabled(true);
+
+        }
+      });
+
+    }
+
+    private void displayFace(final int dieIndex, final int value) {
+      runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          displayDiceFace(dieIndex, value - 1);
+        }
+      });
+    }
+  }
 
 }
